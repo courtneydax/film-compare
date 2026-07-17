@@ -1,0 +1,728 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Film Compare</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #16161a;
+    --card: #1f1f24;
+    --card-border: #2c2c33;
+    --text: #e8e8ec;
+    --muted: #9a9aa5;
+    --accent: #e8b04b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+
+  /* Toolbar */
+  header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--card-border);
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 10;
+  }
+  header h1 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0 auto 0 0;
+    color: var(--muted);
+  }
+  button {
+    font: inherit;
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--card-border);
+    border-radius: 6px;
+    padding: 8px 14px;
+    cursor: pointer;
+  }
+  button:hover { border-color: var(--accent); }
+  button.primary { background: var(--accent); color: #1a1a1a; border-color: var(--accent); font-weight: 600; }
+  input[type=file] { display: none; }
+  .header-control {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .header-control select {
+    font: inherit;
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--card-border);
+    border-radius: 6px;
+    padding: 5px 8px;
+  }
+  .header-control input[type=checkbox] {
+    accent-color: var(--accent);
+    width: 15px;
+    height: 15px;
+  }
+
+  /* Grid */
+  #grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+    padding: 20px;
+  }
+  #empty-msg {
+    padding: 60px 20px;
+    text-align: center;
+    color: var(--muted);
+  }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+  }
+  .card.reference {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 1px var(--accent);
+  }
+  .thumb-wrap {
+    position: relative;
+    background: #000;
+    cursor: zoom-in;
+  }
+  .card img {
+    display: block;
+    width: 100%;
+    height: 220px;
+    object-fit: contain;
+    background: #000;
+  }
+  .badge {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    background: var(--accent);
+    color: #1a1a1a;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    padding: 3px 7px;
+    border-radius: 4px;
+    text-transform: uppercase;
+  }
+  .card-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 10px;
+    border-top: 1px solid var(--card-border);
+  }
+  .card-controls input[type=text] {
+    flex: 1;
+    min-width: 0;
+    font: inherit;
+    background: transparent;
+    color: var(--text);
+    border: none;
+    padding: 4px 2px;
+    border-bottom: 1px solid transparent;
+  }
+  .card-controls input[type=text]:focus {
+    outline: none;
+    border-bottom: 1px solid var(--accent);
+  }
+  .icon-btn {
+    background: transparent;
+    border: none;
+    color: var(--muted);
+    font-size: 15px;
+    padding: 4px 6px;
+    line-height: 1;
+  }
+  .icon-btn:hover { color: var(--text); }
+  .icon-btn.active { color: var(--accent); }
+
+  /* Compare overlay */
+  #overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(10,10,12,0.98);
+    z-index: 100;
+    flex-direction: column;
+  }
+  #overlay.open { display: flex; }
+  #overlay-toolbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--card-border);
+  }
+  #overlay-toolbar .spacer { flex: 1; }
+  #overlay-toolbar .hint {
+    color: var(--muted);
+    font-size: 12px;
+  }
+  #compare-controls {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 8px 16px;
+    border-bottom: 1px solid var(--card-border);
+  }
+  #compare-controls input[type=range] {
+    flex: 1;
+  }
+  #compare-position {
+    color: var(--muted);
+    font-size: 12px;
+    min-width: 160px;
+    text-align: right;
+  }
+  #compare-row {
+    flex: 1;
+    display: flex;
+    gap: 2px;
+    overflow-x: auto;
+    overflow-y: hidden;
+  }
+  .compare-item {
+    position: relative;
+    flex: 1 1 0;
+    min-width: 220px;
+    background: #000;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-right: 1px solid #000;
+  }
+  .compare-item.reference { box-shadow: inset 0 0 0 3px var(--accent); }
+  .compare-item img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    pointer-events: none;
+    user-select: none;
+  }
+  .compare-label {
+    position: absolute;
+    bottom: 8px;
+    left: 8px;
+    right: 8px;
+    font-size: 12px;
+    color: #fff;
+    background: rgba(0,0,0,0.55);
+    padding: 4px 8px;
+    border-radius: 4px;
+    text-align: center;
+    pointer-events: none;
+  }
+  .compare-item:not(.reference) { cursor: pointer; }
+  .pin-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: var(--accent);
+    color: #1a1a1a;
+    border: none;
+    border-radius: 4px;
+    font-size: 12px;
+    padding: 3px 7px;
+    cursor: pointer;
+    z-index: 2;
+  }
+
+  /* Slot picker modal */
+  #slotPickerModal {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 200;
+    align-items: center;
+    justify-content: center;
+  }
+  #slotPickerModal.open { display: flex; }
+  #slotPickerBackdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+  }
+  #slotPickerPanel {
+    position: relative;
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 10px;
+    width: min(720px, 90vw);
+    max-height: 80vh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  #slotPickerHeader {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 12px 16px;
+    border-bottom: 1px solid var(--card-border);
+  }
+  #slotPickerTitle {
+    flex: 1;
+    font-weight: 600;
+    font-size: 14px;
+  }
+  #slotPickerGrid {
+    padding: 16px;
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 10px;
+  }
+  .picker-thumb {
+    cursor: pointer;
+    border: 2px solid transparent;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #000;
+  }
+  .picker-thumb.selected { border-color: var(--accent); }
+  .picker-thumb img {
+    display: block;
+    width: 100%;
+    height: 100px;
+    object-fit: cover;
+  }
+  .picker-thumb .picker-label {
+    font-size: 11px;
+    padding: 4px 6px;
+    color: var(--text);
+    background: var(--card);
+    text-align: center;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Film Compare</h1>
+  <a href="help.html" style="color:var(--muted); font-size:13px;">Help</a>
+  <span id="count" class="hint" style="color:var(--muted); font-size:13px;"></span>
+  <label class="header-control">
+    <input type="checkbox" id="subfoldersToggle">
+    Include subfolders
+  </label>
+  <label class="header-control">
+    Compare:
+    <select id="numVisibleSelect">
+      <option value="1">1</option>
+      <option value="2">2</option>
+      <option value="3" selected>3</option>
+    </select>
+  </label>
+  <button id="chooseBtn" class="primary">Choose Folder</button>
+  <button id="clearBtn">Clear</button>
+  <input type="file" id="folderInput" webkitdirectory multiple accept="image/*">
+</header>
+
+<div id="grid"></div>
+<p id="empty-msg">Choose a folder of images to get started.</p>
+
+<div id="overlay">
+  <div id="overlay-toolbar">
+    <button id="closeBtn">✕ Close</button>
+    <button id="zoomOutBtn">− Zoom</button>
+    <button id="zoomInBtn">+ Zoom</button>
+    <button id="resetBtn">Reset</button>
+    <span class="spacer"></span>
+    <span class="hint">Drag to pan · Scroll to zoom · Esc to close</span>
+  </div>
+  <div id="compare-controls">
+    <button id="prevBtn">‹ Prev</button>
+    <input type="range" id="compareSlider" min="0" max="0" step="1" value="0">
+    <button id="nextBtn">Next ›</button>
+    <span id="compare-position"></span>
+  </div>
+  <div id="compare-row"></div>
+</div>
+
+<div id="slotPickerModal">
+  <div id="slotPickerBackdrop"></div>
+  <div id="slotPickerPanel">
+    <div id="slotPickerHeader">
+      <span id="slotPickerTitle">Choose image</span>
+      <button id="slotPickerUnpin">Auto (unpin)</button>
+      <button id="slotPickerClose">✕</button>
+    </div>
+    <div id="slotPickerGrid"></div>
+  </div>
+</div>
+
+<script>
+let images = []; // { id, url, label, isReference }
+let nextId = 1;
+
+const grid = document.getElementById('grid');
+const emptyMsg = document.getElementById('empty-msg');
+const countEl = document.getElementById('count');
+const folderInput = document.getElementById('folderInput');
+
+document.getElementById('chooseBtn').addEventListener('click', () => folderInput.click());
+document.getElementById('clearBtn').addEventListener('click', clearAll);
+
+const subfoldersToggle = document.getElementById('subfoldersToggle');
+const numVisibleSelect = document.getElementById('numVisibleSelect');
+
+folderInput.addEventListener('change', (e) => {
+  let files = Array.from(e.target.files).filter(f => f.type.startsWith('image/'));
+
+  if (!subfoldersToggle.checked) {
+    files = files.filter(f => f.webkitRelativePath.split('/').length === 2);
+  }
+
+  files.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+
+  clearAll();
+  images = files.map(f => ({
+    id: nextId++,
+    url: URL.createObjectURL(f),
+    label: f.name.replace(/\.[^/.]+$/, ''),
+    isReference: false
+  }));
+  render();
+});
+
+function clearAll() {
+  images.forEach(img => URL.revokeObjectURL(img.url));
+  images = [];
+  render();
+}
+
+function setReference(id) {
+  images.forEach(img => img.isReference = (img.id === id));
+  render();
+}
+
+function sortedImages() {
+  return [...images].sort((a, b) => {
+    if (a.isReference !== b.isReference) return a.isReference ? -1 : 1;
+    return 0;
+  });
+}
+
+function render() {
+  const list = sortedImages();
+  grid.innerHTML = '';
+  emptyMsg.style.display = list.length ? 'none' : 'block';
+  countEl.textContent = list.length ? `${list.length} image${list.length === 1 ? '' : 's'}` : '';
+
+  list.forEach(img => {
+    const card = document.createElement('div');
+    card.className = 'card' + (img.isReference ? ' reference' : '');
+
+    const thumbWrap = document.createElement('div');
+    thumbWrap.className = 'thumb-wrap';
+    if (img.isReference) {
+      const badge = document.createElement('span');
+      badge.className = 'badge';
+      badge.textContent = 'Reference';
+      thumbWrap.appendChild(badge);
+    }
+    const thumb = document.createElement('img');
+    thumb.src = img.url;
+    thumb.alt = img.label;
+    thumb.addEventListener('click', () => openCompare());
+    thumbWrap.appendChild(thumb);
+    card.appendChild(thumbWrap);
+
+    const controls = document.createElement('div');
+    controls.className = 'card-controls';
+
+    const refBtn = document.createElement('button');
+    refBtn.className = 'icon-btn' + (img.isReference ? ' active' : '');
+    refBtn.title = img.isReference ? 'Reference image' : 'Set as reference';
+    refBtn.textContent = '★';
+    refBtn.addEventListener('click', () => setReference(img.isReference ? -1 : img.id));
+
+    const labelInput = document.createElement('input');
+    labelInput.type = 'text';
+    labelInput.value = img.label;
+    labelInput.addEventListener('input', (e) => { img.label = e.target.value; });
+
+    const removeBtn = document.createElement('button');
+    removeBtn.className = 'icon-btn';
+    removeBtn.title = 'Remove';
+    removeBtn.textContent = '✕';
+    removeBtn.addEventListener('click', () => {
+      URL.revokeObjectURL(img.url);
+      images = images.filter(i => i.id !== img.id);
+      render();
+    });
+
+    controls.appendChild(refBtn);
+    controls.appendChild(labelInput);
+    controls.appendChild(removeBtn);
+    card.appendChild(controls);
+
+    grid.appendChild(card);
+  });
+}
+
+/* ---- Compare overlay: reference locked, slider steps through the rest, pan/zoom synced ---- */
+const overlay = document.getElementById('overlay');
+const compareRow = document.getElementById('compare-row');
+const compareSlider = document.getElementById('compareSlider');
+const comparePosition = document.getElementById('compare-position');
+let pan = { scale: 1, x: 0, y: 0 };
+let dragging = false;
+let dragStart = { x: 0, y: 0, panX: 0, panY: 0 };
+let others = []; // non-reference images, in stable order
+let compareIndex = 0;
+let curItems = []; // { container, imgEl, labelEl }
+
+function getNumVisible() {
+  return Number(numVisibleSelect.value);
+}
+
+function buildCompareItem(isReference, onClick) {
+  const item = document.createElement('div');
+  item.className = 'compare-item' + (isReference ? ' reference' : '');
+  const el = document.createElement('img');
+  item.appendChild(el);
+  const label = document.createElement('div');
+  label.className = 'compare-label';
+  item.appendChild(label);
+  item.addEventListener('mousedown', onDragStart);
+  item.addEventListener('wheel', onWheel, { passive: false });
+  if (onClick) {
+    item.title = 'Click to choose an image for this slot · drag to pan';
+    item.addEventListener('click', () => { if (!dragMoved) onClick(); });
+  }
+  return item;
+}
+
+function openCompare() {
+  const reference = images.find(img => img.isReference);
+  if (!reference) { alert('Mark an image as the reference (★) first.'); return; }
+  others = images.filter(img => !img.isReference);
+  if (!others.length) { alert('Add at least one more image to compare against the reference.'); return; }
+
+  pan = { scale: 1, x: 0, y: 0 };
+  compareIndex = 0;
+  compareRow.innerHTML = '';
+
+  const refItem = buildCompareItem(true);
+  refItem.querySelector('img').src = reference.url;
+  refItem.querySelector('img').alt = reference.label;
+  refItem.querySelector('.compare-label').textContent = reference.label + ' (reference)';
+  compareRow.appendChild(refItem);
+
+  buildComparePanels();
+  applyTransform();
+  overlay.classList.add('open');
+}
+
+function buildComparePanels() {
+  curItems.forEach(slot => slot.container.remove());
+  curItems = [];
+  const n = getNumVisible();
+  for (let i = 0; i < n; i++) {
+    const slotIndex = i;
+    const item = buildCompareItem(false, () => openSlotPicker(slotIndex));
+    const pinBadge = document.createElement('button');
+    pinBadge.className = 'pin-badge';
+    pinBadge.textContent = '📌';
+    pinBadge.title = 'Pinned — click to release';
+    pinBadge.style.display = 'none';
+    pinBadge.addEventListener('click', (e) => { e.stopPropagation(); unpinSlot(slotIndex); });
+    item.appendChild(pinBadge);
+    compareRow.appendChild(item);
+    curItems.push({
+      container: item,
+      imgEl: item.querySelector('img'),
+      labelEl: item.querySelector('.compare-label'),
+      pinBadge,
+      pinned: false,
+      pinnedImage: null
+    });
+  }
+
+  compareIndex = 0;
+  updateCompareWindow();
+}
+
+function updateCompareWindow() {
+  const pinnedImages = curItems.filter(s => s.pinned).map(s => s.pinnedImage);
+  const autoQueue = others.filter(img => !pinnedImages.includes(img));
+  const unpinnedCount = curItems.filter(s => !s.pinned).length;
+
+  compareSlider.max = Math.max(0, autoQueue.length - unpinnedCount);
+  compareIndex = Math.min(compareIndex, Number(compareSlider.max));
+  compareSlider.value = compareIndex;
+
+  let autoCursor = compareIndex;
+  curItems.forEach(slot => {
+    const img = slot.pinned ? slot.pinnedImage : autoQueue[autoCursor++];
+    slot.pinBadge.style.display = slot.pinned ? '' : 'none';
+    if (img) {
+      slot.container.style.display = '';
+      slot.imgEl.src = img.url;
+      slot.imgEl.alt = img.label;
+      slot.labelEl.textContent = img.label + (slot.pinned ? ' 📌' : '');
+    } else {
+      slot.container.style.display = 'none';
+    }
+  });
+
+  if (unpinnedCount) {
+    const end = Math.min(compareIndex + unpinnedCount, autoQueue.length);
+    comparePosition.textContent = `${compareIndex + 1}–${end} / ${autoQueue.length}`;
+  } else {
+    comparePosition.textContent = 'All slots pinned';
+  }
+}
+
+function unpinSlot(i) {
+  curItems[i].pinned = false;
+  curItems[i].pinnedImage = null;
+  updateCompareWindow();
+}
+
+function closeCompare() {
+  overlay.classList.remove('open');
+}
+
+numVisibleSelect.addEventListener('change', () => {
+  if (overlay.classList.contains('open')) {
+    buildComparePanels();
+    applyTransform();
+  }
+});
+
+function applyTransform() {
+  compareRow.querySelectorAll('.compare-item img').forEach(el => {
+    el.style.transform = `translate(${pan.x}px, ${pan.y}px) scale(${pan.scale})`;
+  });
+}
+
+let dragMoved = false;
+function onDragStart(e) {
+  dragging = true;
+  dragMoved = false;
+  dragStart = { x: e.clientX, y: e.clientY, panX: pan.x, panY: pan.y };
+  e.preventDefault();
+}
+window.addEventListener('mousemove', (e) => {
+  if (!dragging) return;
+  const dx = e.clientX - dragStart.x;
+  const dy = e.clientY - dragStart.y;
+  if (Math.abs(dx) > 4 || Math.abs(dy) > 4) dragMoved = true;
+  pan.x = dragStart.panX + dx;
+  pan.y = dragStart.panY + dy;
+  applyTransform();
+});
+window.addEventListener('mouseup', () => { dragging = false; });
+
+function zoom(factor) {
+  pan.scale = Math.min(10, Math.max(1, pan.scale * factor));
+  if (pan.scale === 1) { pan.x = 0; pan.y = 0; }
+  applyTransform();
+}
+function onWheel(e) {
+  e.preventDefault();
+  zoom(e.deltaY < 0 ? 1.1 : 1 / 1.1);
+}
+
+function stepCompare(delta) {
+  compareIndex = Math.min(Number(compareSlider.max), Math.max(0, compareIndex + delta));
+  compareSlider.value = compareIndex;
+  updateCompareWindow();
+}
+
+document.getElementById('closeBtn').addEventListener('click', closeCompare);
+document.getElementById('resetBtn').addEventListener('click', () => { pan = { scale: 1, x: 0, y: 0 }; applyTransform(); });
+document.getElementById('zoomInBtn').addEventListener('click', () => zoom(1.25));
+document.getElementById('zoomOutBtn').addEventListener('click', () => zoom(1 / 1.25));
+document.getElementById('prevBtn').addEventListener('click', () => stepCompare(-1));
+document.getElementById('nextBtn').addEventListener('click', () => stepCompare(1));
+compareSlider.addEventListener('input', (e) => {
+  compareIndex = Number(e.target.value);
+  updateCompareWindow();
+});
+window.addEventListener('keydown', (e) => {
+  if (slotPickerModal.classList.contains('open')) {
+    if (e.key === 'Escape') closeSlotPicker();
+    return;
+  }
+  if (!overlay.classList.contains('open')) return;
+  if (e.key === 'Escape') closeCompare();
+  else if (e.key === 'ArrowLeft') { e.preventDefault(); stepCompare(-1); }
+  else if (e.key === 'ArrowRight') { e.preventDefault(); stepCompare(1); }
+});
+
+/* ---- Slot picker modal ---- */
+const slotPickerModal = document.getElementById('slotPickerModal');
+const slotPickerTitle = document.getElementById('slotPickerTitle');
+const slotPickerGrid = document.getElementById('slotPickerGrid');
+const slotPickerUnpin = document.getElementById('slotPickerUnpin');
+let pickerSlotIndex = null;
+
+function openSlotPicker(i) {
+  pickerSlotIndex = i;
+  const slot = curItems[i];
+  slotPickerTitle.textContent = `Choose image for slot ${i + 1}`;
+  slotPickerUnpin.style.display = slot.pinned ? '' : 'none';
+
+  const pinnedElsewhere = curItems.filter((s, idx) => idx !== i && s.pinned).map(s => s.pinnedImage);
+  slotPickerGrid.innerHTML = '';
+  others.filter(img => !pinnedElsewhere.includes(img)).forEach(img => {
+    const thumb = document.createElement('div');
+    thumb.className = 'picker-thumb' + (slot.pinned && slot.pinnedImage === img ? ' selected' : '');
+    const el = document.createElement('img');
+    el.src = img.url;
+    el.alt = img.label;
+    thumb.appendChild(el);
+    const label = document.createElement('div');
+    label.className = 'picker-label';
+    label.textContent = img.label;
+    thumb.appendChild(label);
+    thumb.addEventListener('click', () => {
+      slot.pinned = true;
+      slot.pinnedImage = img;
+      updateCompareWindow();
+      closeSlotPicker();
+    });
+    slotPickerGrid.appendChild(thumb);
+  });
+
+  slotPickerModal.classList.add('open');
+}
+
+function closeSlotPicker() {
+  slotPickerModal.classList.remove('open');
+  pickerSlotIndex = null;
+}
+
+document.getElementById('slotPickerClose').addEventListener('click', closeSlotPicker);
+document.getElementById('slotPickerBackdrop').addEventListener('click', closeSlotPicker);
+slotPickerUnpin.addEventListener('click', () => {
+  if (pickerSlotIndex !== null) unpinSlot(pickerSlotIndex);
+  closeSlotPicker();
+});
+</script>
+</body>
+</html>

@@ -1,0 +1,667 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Film Stock Reference</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #16161a;
+    --card: #1f1f24;
+    --card-border: #2c2c33;
+    --text: #e8e8ec;
+    --muted: #9a9aa5;
+    --accent: #e8b04b;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+  }
+
+  header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 14px 20px;
+    border-bottom: 1px solid var(--card-border);
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 10;
+  }
+  header h1 {
+    font-size: 16px;
+    font-weight: 600;
+    margin: 0;
+    color: var(--text);
+  }
+  header .sub {
+    color: var(--muted);
+    font-size: 13px;
+    margin-right: auto;
+  }
+  a.back {
+    font-size: 13px;
+    color: var(--muted);
+    text-decoration: none;
+    border: 1px solid var(--card-border);
+    border-radius: 6px;
+    padding: 8px 14px;
+  }
+  a.back:hover { color: var(--text); border-color: var(--accent); }
+
+  main {
+    padding: 20px;
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+  .note {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    font-size: 13px;
+    color: var(--muted);
+  }
+  .note strong { color: var(--text); }
+
+  .table-wrap {
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    min-width: 1100px;
+  }
+  th, td {
+    text-align: left;
+    padding: 10px 12px;
+    border-bottom: 1px solid var(--card-border);
+    vertical-align: top;
+  }
+  th {
+    background: var(--card);
+    color: var(--muted);
+    font-weight: 600;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    position: sticky;
+    top: var(--header-h, 57px);
+  }
+  tr:hover td { background: rgba(232,176,75,0.05); }
+  tr.checkstock td:first-child { border-left: 3px solid var(--accent); }
+  td.stock-name { font-weight: 600; white-space: nowrap; }
+  td.type { color: var(--muted); white-space: nowrap; }
+  .prompt-cell {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+  }
+  .prompt-text {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    font-size: 12px;
+    color: var(--text);
+    background: var(--bg);
+    border: 1px solid var(--card-border);
+    border-radius: 4px;
+    padding: 6px 8px;
+    flex: 1;
+  }
+  .copy-btn {
+    background: transparent;
+    border: 1px solid var(--card-border);
+    color: var(--muted);
+    border-radius: 4px;
+    padding: 5px 8px;
+    font-size: 12px;
+    cursor: pointer;
+    white-space: nowrap;
+  }
+  .copy-btn:hover { color: var(--text); border-color: var(--accent); }
+  .copy-btn.copied { color: var(--accent); border-color: var(--accent); }
+
+  .section-title {
+    font-size: 15px;
+    font-weight: 600;
+    margin: 32px 0 6px;
+  }
+  .section-sub {
+    color: var(--muted);
+    font-size: 13px;
+    margin: 0 0 16px;
+  }
+  .template-box {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 6px;
+    padding: 12px 16px;
+    margin-bottom: 20px;
+    font-size: 13px;
+  }
+  .template-box code {
+    font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    background: var(--bg);
+    border: 1px solid var(--card-border);
+    border-radius: 4px;
+    padding: 1px 6px;
+    color: var(--accent);
+  }
+  .notes-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+    gap: 16px;
+  }
+  .notes-col {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 14px 16px;
+  }
+  .notes-col h3 {
+    margin: 0 0 10px;
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--muted);
+  }
+  .notes-col dl { margin: 0; }
+  .notes-col dt {
+    font-weight: 600;
+    font-size: 13px;
+    margin-top: 12px;
+  }
+  .notes-col dt:first-child { margin-top: 0; }
+  .notes-col dd {
+    margin: 2px 0 0;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.45;
+  }
+
+  .showcase-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+  }
+  .showcase-card {
+    background: var(--card);
+    border: 1px solid var(--card-border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .showcase-card h3 {
+    margin: 0;
+    font-size: 14px;
+  }
+  .showcase-why {
+    margin: 0;
+    font-size: 12px;
+    color: var(--muted);
+    font-style: italic;
+  }
+  .showcase-card .prompt-cell { margin-top: 2px; }
+  .showcase-card .prompt-text { display: block; }
+
+  .showcase-thumbs {
+    display: flex;
+    gap: 6px;
+  }
+  .showcase-thumb-wrap {
+    position: relative;
+    flex: 1 1 0;
+    min-width: 0;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #000;
+    cursor: zoom-in;
+    line-height: 0;
+  }
+  .showcase-thumb-wrap img {
+    display: block;
+    width: 100%;
+    height: 130px;
+    object-fit: cover;
+  }
+  .showcase-thumb-caption {
+    position: absolute;
+    bottom: 6px;
+    left: 6px;
+    font-size: 11px;
+    color: #fff;
+    background: rgba(0,0,0,0.6);
+    padding: 2px 6px;
+    border-radius: 4px;
+  }
+
+  #lightbox {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(10,10,12,0.95);
+    z-index: 100;
+    align-items: center;
+    justify-content: center;
+    cursor: zoom-out;
+    padding: 40px;
+  }
+  #lightbox.open { display: flex; }
+  #lightbox img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+    border-radius: 4px;
+  }
+  #lightbox-close {
+    position: absolute;
+    top: 16px;
+    right: 20px;
+    background: var(--card);
+    color: var(--text);
+    border: 1px solid var(--card-border);
+    border-radius: 6px;
+    padding: 8px 14px;
+    cursor: pointer;
+    font: inherit;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Film Stock Reference</h1>
+  <span class="sub">what to expect from each stock, and better prompts to test</span>
+  <a class="back" href="index.html">← Back to Film Compare</a>
+</header>
+
+<main>
+  <div class="note">
+    Two easy sanity-check stocks: <strong>Cinestill 800T</strong>'s red halation glow around highlights should be
+    either clearly present or clearly absent, and <strong>Velvia 50</strong> should look aggressively oversaturated
+    next to everything else. If a model doesn't nail those two, it's probably not doing stock-specific rendering —
+    just adding generic "film grain."
+  </div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Stock</th>
+          <th>Type / ISO</th>
+          <th>Signature look</th>
+          <th>Best for</th>
+          <th>Suggested prompt</th>
+        </tr>
+      </thead>
+      <tbody>
+
+        <tr class="checkstock">
+          <td class="stock-name">Cinestill 800T</td>
+          <td class="type">Color neg, 800<br>tungsten-balanced<br>3:2</td>
+          <td>Red/pink <strong>halation</strong> around bright highlights &mdash; the defining trait. Cool, slightly teal shadows unless lit with tungsten/warm light.</td>
+          <td>Night &amp; urban / neon scenes</td>
+          <td class="prompt-cell">
+            <span class="prompt-text">Shot on Cinestill 800T, 35mm film, tungsten-balanced with red halation around highlights, cool teal shadows</span>
+            <button class="copy-btn">Copy</button>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="stock-name">Kodak Gold 200</td>
+          <td class="type">Color neg, 200<br>3:2</td>
+          <td>Warm, golden-yellow cast, especially in highlights. "Nostalgic snapshot" vibe. Moderate grain, punchy but not extreme.</td>
+          <td>Everyday / travel / vacation, daylight</td>
+          <td class="prompt-cell">
+            <span class="prompt-text">Shot on Kodak Gold 200, 35mm film, warm golden tones, fine grain, nostalgic daylight color</span>
+            <button class="copy-btn">Copy</button>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="stock-name">Kodak Portra 400</td>
+          <td class="type">Color neg, 400<br>3:2</td>
+          <td>Muted, soft, low-contrast. Famous for accurate/flattering skin tones. Fine grain, pastel-leaning, slightly warm neutral.</td>
+          <td>Portraits, weddings, general use</td>
+          <td class="prompt-cell">
+            <span class="prompt-text">Shot on Kodak Portra 400, 35mm film, soft muted colors, natural skin tones, fine grain, low contrast</span>
+            <button class="copy-btn">Copy</button>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="stock-name">Kodak Portra 800</td>
+          <td class="type">Color neg, 800<br>3:2</td>
+          <td>Same DNA as 400 but more grain, can run a touch cooler/more saturated. Built for low light.</td>
+          <td>Portraits indoors / low light, events</td>
+          <td class="prompt-cell">
+            <span class="prompt-text">Shot on Kodak Portra 800, 35mm film, natural skin tones, moderate grain, slightly cooler and more saturated than Portra 400</span>
+            <button class="copy-btn">Copy</button>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="stock-name">Portra 800 pushed to 1600</td>
+          <td class="type">Color neg, pushed 1 stop<br>3:2</td>
+          <td>Adds contrast and visible grain on top of 800's look, deeper/crushed shadows, grittier and more dramatic.</td>
+          <td>Low-light / night portraits, concerts</td>
+          <td class="prompt-cell">
+            <span class="prompt-text">Shot on Kodak Portra 800 pushed to 1600, 35mm film, increased contrast and visible grain, deep crushed shadows, dramatic low-light look</span>
+            <button class="copy-btn">Copy</button>
+          </td>
+        </tr>
+
+        <tr class="checkstock">
+          <td class="stock-name">Fujichrome Velvia 50</td>
+          <td class="type">Slide (reversal), 50<br>3:2</td>
+          <td>Extremely saturated, punchy greens/reds, high contrast, ultra-fine grain. Unforgiving, no-latitude look.</td>
+          <td>Landscape, nature</td>
+          <td class="prompt-cell">
+            <span class="prompt-text">Shot on Fujichrome Velvia 50, 35mm slide film, extremely saturated vivid colors, high contrast, ultra-fine grain</span>
+            <button class="copy-btn">Copy</button>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="stock-name">Kodak Kodachrome</td>
+          <td class="type">Slide (reversal), 64<br>discontinued 2009<br>3:2</td>
+          <td>Warm, punchy reds/oranges, high contrast, fine grain. The iconic "archival magazine" look &mdash; think old National Geographic covers.</td>
+          <td>Nostalgic / archival, warm-toned scenes</td>
+          <td class="prompt-cell">
+            <span class="prompt-text">Shot on Kodak Kodachrome, 35mm slide film, warm punchy reds and oranges, high contrast, fine grain, classic archival color</span>
+            <button class="copy-btn">Copy</button>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="stock-name">Fujicolor Pro 400H</td>
+          <td class="type">Color neg, 400<br>3:2</td>
+          <td>Soft, airy, pastel &mdash; cooler and greener/mintier than Portra. Gentle contrast.</td>
+          <td>Wedding / lifestyle, soft portraits</td>
+          <td class="prompt-cell">
+            <span class="prompt-text">Shot on Fujicolor Pro 400H, 35mm film, soft pastel tones, cool mint-green cast, gentle low contrast</span>
+            <button class="copy-btn">Copy</button>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="stock-name">Ilford HP5 Plus</td>
+          <td class="type">B&amp;W neg, 400<br>3:2</td>
+          <td>Classic documentary/street grain &mdash; moderate, even. Balanced tonal range, versatile.</td>
+          <td>Street / documentary, general B&amp;W</td>
+          <td class="prompt-cell">
+            <span class="prompt-text">Shot on Ilford HP5 Plus 400, 35mm black and white film, classic documentary grain, balanced tonal range</span>
+            <button class="copy-btn">Copy</button>
+          </td>
+        </tr>
+
+        <tr>
+          <td class="stock-name">Kodak Tri-X 400</td>
+          <td class="type">B&amp;W neg, 400<br>3:2</td>
+          <td>More pronounced, chunkier grain than HP5. Higher contrast, deep blacks. The "photojournalism" look.</td>
+          <td>Photojournalism, high-contrast street/portrait</td>
+          <td class="prompt-cell">
+            <span class="prompt-text">Shot on Kodak Tri-X 400, 35mm black and white film, punchy contrast, deep blacks, pronounced grain, gritty photojournalism look</span>
+            <button class="copy-btn">Copy</button>
+          </td>
+        </tr>
+
+      </tbody>
+    </table>
+  </div>
+
+  <h2 class="section-title">Showcase prompts</h2>
+  <p class="section-sub">Full scene prompts chosen to expose each stock's signature trait &mdash; not just a subject with the stock name tacked on.</p>
+  <div class="showcase-grid">
+
+    <div class="showcase-card">
+      <h3>Cinestill 800T</h3>
+      <div class="showcase-thumbs">
+        <div class="showcase-thumb-wrap" data-full="examples/Chroma-Cinestill 800T.webp">
+          <img src="examples/Chroma-Cinestill 800T.webp" alt="Cinestill 800T example, generated with Chroma">
+          <span class="showcase-thumb-caption">Chroma</span>
+        </div>
+      </div>
+      <p class="showcase-why">Point-source lights against a dark background force the halation to show up or not. Landscape scene, 3:2 aspect ratio.</p>
+      <div class="prompt-cell">
+        <span class="prompt-text">A city street at night, neon signs and car headlights glowing on wet pavement, a lone figure walking under a streetlamp. Shot on Cinestill 800T, 35mm film, tungsten-balanced with red halation around highlights, cool teal shadows.</span>
+        <button class="copy-btn">Copy</button>
+      </div>
+    </div>
+
+    <div class="showcase-card">
+      <h3>Kodak Gold 200</h3>
+      <div class="showcase-thumbs">
+        <div class="showcase-thumb-wrap" data-full="examples/Grok Imagine-Kodak Gold 200.png">
+          <img src="examples/Grok Imagine-Kodak Gold 200.png" alt="Kodak Gold 200 example, generated with Grok Imagine">
+          <span class="showcase-thumb-caption">Grok Imagine</span>
+        </div>
+        <div class="showcase-thumb-wrap" data-full="examples/ZIT-Kodak Gold 200.webp">
+          <img src="examples/ZIT-Kodak Gold 200.webp" alt="Kodak Gold 200 example, generated with Z-Image Turbo">
+          <span class="showcase-thumb-caption">Z-Image Turbo</span>
+        </div>
+      </div>
+      <p class="showcase-why">Sunny, everyday daylight is where the warm golden cast reads clearest. Landscape scene, 3:2 aspect ratio.</p>
+      <div class="prompt-cell">
+        <span class="prompt-text">A family barbecue in a sunny backyard, kids running through a sprinkler, golden afternoon light. Shot on Kodak Gold 200, 35mm film, warm golden tones, fine grain, nostalgic daylight color.</span>
+        <button class="copy-btn">Copy</button>
+      </div>
+    </div>
+
+    <div class="showcase-card">
+      <h3>Kodak Portra 400</h3>
+      <div class="showcase-thumbs">
+        <div class="showcase-thumb-wrap" data-full="examples/Chroma-Kodak Portra 400.webp">
+          <img src="examples/Chroma-Kodak Portra 400.webp" alt="Kodak Portra 400 example, generated with Chroma">
+          <span class="showcase-thumb-caption">Chroma</span>
+        </div>
+      </div>
+      <p class="showcase-why">A close portrait puts skin-tone rendering &mdash; Portra's whole reputation &mdash; front and center. Portrait orientation, 2:3 aspect ratio.</p>
+      <div class="prompt-cell">
+        <span class="prompt-text">Close-up portrait of a woman laughing, soft natural window light, neutral background. Shot on Kodak Portra 400, 35mm film, soft muted colors, natural skin tones, fine grain, low contrast.</span>
+        <button class="copy-btn">Copy</button>
+      </div>
+    </div>
+
+    <div class="showcase-card">
+      <h3>Kodak Portra 800</h3>
+      <div class="showcase-thumbs">
+        <div class="showcase-thumb-wrap" data-full="examples/Chroma-Kodak Portra 800.webp">
+          <img src="examples/Chroma-Kodak Portra 800.webp" alt="Kodak Portra 800 example, generated with Chroma">
+          <span class="showcase-thumb-caption">Chroma</span>
+        </div>
+      </div>
+      <p class="showcase-why">Dim indoor light tests skin tones and grain under conditions 400 speed can't handle. Landscape scene, 3:2 aspect ratio.</p>
+      <div class="prompt-cell">
+        <span class="prompt-text">A couple sharing a quiet moment at a dimly lit restaurant table, candlelight. Shot on Kodak Portra 800, 35mm film, natural skin tones, moderate grain, slightly cooler and more saturated than Portra 400.</span>
+        <button class="copy-btn">Copy</button>
+      </div>
+    </div>
+
+    <div class="showcase-card">
+      <h3>Portra 800 pushed to 1600</h3>
+      <div class="showcase-thumbs">
+        <div class="showcase-thumb-wrap" data-full="examples/Grok Imagine-Kodak Portra 800 pushed to 1600.png">
+          <img src="examples/Grok Imagine-Kodak Portra 800 pushed to 1600.png" alt="Portra 800 pushed to 1600 example, generated with Grok Imagine">
+          <span class="showcase-thumb-caption">Grok Imagine</span>
+        </div>
+      </div>
+      <p class="showcase-why">Harsh stage lighting against a dark crowd exposes the extra contrast and grain from the push. Landscape scene, 3:2 aspect ratio.</p>
+      <div class="prompt-cell">
+        <span class="prompt-text">A band performing on a small dark stage, dramatic spotlight, crowd silhouettes in the foreground. Shot on Kodak Portra 800 pushed to 1600, 35mm film, increased contrast and visible grain, deep crushed shadows, dramatic low-light look.</span>
+        <button class="copy-btn">Copy</button>
+      </div>
+    </div>
+
+    <div class="showcase-card">
+      <h3>Fujichrome Velvia 50</h3>
+      <div class="showcase-thumbs">
+        <div class="showcase-thumb-wrap" data-full="examples/Chroma-Fujichrome Velvia 50.webp">
+          <img src="examples/Chroma-Fujichrome Velvia 50.webp" alt="Fujichrome Velvia 50 example, generated with Chroma">
+          <span class="showcase-thumb-caption">Chroma</span>
+        </div>
+      </div>
+      <p class="showcase-why">Complementary orange/green landscape colors make the oversaturation impossible to miss. Landscape scene, 3:2 aspect ratio.</p>
+      <div class="prompt-cell">
+        <span class="prompt-text">A mountain lake at sunset, vivid orange sky reflecting on the water, dense green pine forest along the shore. Shot on Fujichrome Velvia 50, 35mm slide film, extremely saturated vivid colors, high contrast, ultra-fine grain.</span>
+        <button class="copy-btn">Copy</button>
+      </div>
+    </div>
+
+    <div class="showcase-card">
+      <h3>Kodak Kodachrome</h3>
+      <div class="showcase-thumbs">
+        <div class="showcase-thumb-wrap" data-full="examples/Chroma-Kodak Kodachrome.webp">
+          <img src="examples/Chroma-Kodak Kodachrome.webp" alt="Kodak Kodachrome example, generated with Chroma">
+          <span class="showcase-thumb-caption">Chroma</span>
+        </div>
+      </div>
+      <p class="showcase-why">A red/orange-heavy subject directly tests Kodachrome's signature warm punch. Landscape scene, 3:2 aspect ratio.</p>
+      <div class="prompt-cell">
+        <span class="prompt-text">A vintage red pickup truck parked outside a small-town diner, autumn leaves scattered on the sidewalk. Shot on Kodak Kodachrome, 35mm slide film, warm punchy reds and oranges, high contrast, fine grain, classic archival color.</span>
+        <button class="copy-btn">Copy</button>
+      </div>
+    </div>
+
+    <div class="showcase-card">
+      <h3>Fujicolor Pro 400H</h3>
+      <div class="showcase-thumbs">
+        <div class="showcase-thumb-wrap" data-full="examples/Chroma-Fujicolor Pro 400H.webp">
+          <img src="examples/Chroma-Fujicolor Pro 400H.webp" alt="Fujicolor Pro 400H example, generated with Chroma">
+          <span class="showcase-thumb-caption">Chroma</span>
+        </div>
+      </div>
+      <p class="showcase-why">A pastel-heavy wedding scene tests the mint-green cast and gentle contrast against Portra's warmer neutral. Portrait orientation, 2:3 aspect ratio.</p>
+      <div class="prompt-cell">
+        <span class="prompt-text">A bride adjusting her veil in soft morning light, pastel flowers on the table beside her. Shot on Fujicolor Pro 400H, 35mm film, soft pastel tones, cool mint-green cast, gentle low contrast.</span>
+        <button class="copy-btn">Copy</button>
+      </div>
+    </div>
+
+    <div class="showcase-card">
+      <h3>Ilford HP5 Plus</h3>
+      <div class="showcase-thumbs">
+        <div class="showcase-thumb-wrap" data-full="examples/Chroma-Ilford HP5 Plus 400.webp">
+          <img src="examples/Chroma-Ilford HP5 Plus 400.webp" alt="Ilford HP5 Plus example, generated with Chroma">
+          <span class="showcase-thumb-caption">Chroma</span>
+        </div>
+      </div>
+      <p class="showcase-why">A varied street scene tests the balanced tonal range across highlights and shadows. Landscape scene, 3:2 aspect ratio.</p>
+      <div class="prompt-cell">
+        <span class="prompt-text">A busy city sidewalk, pedestrians crossing in different directions, a street vendor's cart in the foreground. Shot on Ilford HP5 Plus 400, 35mm black and white film, classic documentary grain, balanced tonal range.</span>
+        <button class="copy-btn">Copy</button>
+      </div>
+    </div>
+
+    <div class="showcase-card">
+      <h3>Kodak Tri-X 400</h3>
+      <div class="showcase-thumbs">
+        <div class="showcase-thumb-wrap" data-full="examples/Chroma-Kodak Tri-X 400.webp">
+          <img src="examples/Chroma-Kodak Tri-X 400.webp" alt="Kodak Tri-X 400 example, generated with Chroma">
+          <span class="showcase-thumb-caption">Chroma</span>
+        </div>
+      </div>
+      <p class="showcase-why">Harsh side lighting with deep shadows exposes Tri-X's punchy contrast and chunky grain. Landscape scene, 3:2 aspect ratio.</p>
+      <div class="prompt-cell">
+        <span class="prompt-text">A boxer mid-punch in a dim gym, sweat catching the light, harsh side lighting. Shot on Kodak Tri-X 400, 35mm black and white film, punchy contrast, deep blacks, pronounced grain, gritty photojournalism look.</span>
+        <button class="copy-btn">Copy</button>
+      </div>
+    </div>
+
+  </div>
+
+  <h2 class="section-title">T2I / I2I prompt template</h2>
+  <p class="section-sub">Same trait descriptor either way — just swap the lead-in verb depending on whether you're generating fresh or editing an existing photo.</p>
+  <div class="template-box">
+    T2I: <code>Shot on [Stock], 35mm film, [traits]</code><br>
+    I2I: <code>Convert this photo to [Stock], 35mm film, [traits]</code> (or <code>Apply film emulation:</code>)
+  </div>
+
+  <h2 class="section-title">Model notes</h2>
+  <p class="section-sub">Based on vendor docs / community reports, not hands-on testing in this tool yet &mdash; treat as a starting point to verify empirically.</p>
+  <div class="notes-grid">
+    <div class="notes-col">
+      <h3>T2I</h3>
+      <dl>
+        <dt>Krea 2 Turbo</dt>
+        <dd>Strong at grain, motion blur, low-dynamic-range "captured" look. Has a creativity/raw dial that controls literal prompt adherence &mdash; set it to raw, or it aesthetically reinterprets your stock prompt instead of rendering it literally.</dd>
+        <dt>Chroma</dt>
+        <dd>FLUX-based, trained on a broader/less-curated dataset spanning artistic, photographic, and niche styles. Likely more headroom for gritty/analog looks than heavily-curated commercial models &mdash; not directly benchmarked for film stock specifically.</dd>
+        <dt>Seedream</dt>
+        <dd>Responds well to photographic language (film stock, lens, lighting). Avoid stacking style adjectives ("cinematic, photorealistic, professional") &mdash; use concrete nouns and one style cue instead to avoid muddy output.</dd>
+        <dt>Qwen Image</dt>
+        <dd>Solid general prompt adherence. Reported as slower/more deliberate &mdash; better suited to a finishing pass than bulk iteration.</dd>
+        <dt>Grok Imagine</dt>
+        <dd>Has a distinct house style historically harder to steer with fine-grained aesthetic prompts. No direct film-stock benchmark found.</dd>
+        <dt>Z-Image Turbo</dt>
+        <dd>Fast/distilled. Adherence is generally solid, but turbo/distilled models often trade away fine stylistic nuance for speed.</dd>
+      </dl>
+    </div>
+    <div class="notes-col">
+      <h3>I2I</h3>
+      <dl>
+        <dt>FireRed (FireRed-Image-Edit-1.0)</dt>
+        <dd>Open-source. Training data explicitly separates Semantic / Stylistic / Structural editing, and old-photo restoration is a named capability &mdash; good sign for film-emulation edits specifically.</dd>
+        <dt>Qwen-Image-Edit</dt>
+        <dd>Preserves identity, lighting, and color tone across edits. Rewards patience over speed, similar to its T2I sibling.</dd>
+        <dt>Grok</dt>
+        <dd>No direct data found on I2I film-stock handling.</dd>
+        <dt>Seedream v5</dt>
+        <dd>Same photographic-language strength as the T2I model &mdash; likely carries over to edits, though not separately confirmed.</dd>
+      </dl>
+    </div>
+  </div>
+</main>
+
+<div id="lightbox">
+  <button id="lightbox-close">✕ Close</button>
+  <img id="lightbox-img" src="" alt="">
+</div>
+
+<script>
+function syncHeaderHeight() {
+  document.documentElement.style.setProperty('--header-h', document.querySelector('header').offsetHeight + 'px');
+}
+syncHeaderHeight();
+window.addEventListener('resize', syncHeaderHeight);
+
+document.querySelectorAll('.copy-btn').forEach(btn => {
+  btn.addEventListener('click', async () => {
+    const text = btn.previousElementSibling.textContent;
+    await navigator.clipboard.writeText(text);
+    btn.textContent = 'Copied';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 1200);
+  });
+});
+
+const lightbox = document.getElementById('lightbox');
+const lightboxImg = document.getElementById('lightbox-img');
+
+document.querySelectorAll('.showcase-thumb-wrap').forEach(wrap => {
+  wrap.addEventListener('click', () => {
+    lightboxImg.src = wrap.dataset.full;
+    lightboxImg.alt = wrap.querySelector('img').alt;
+    lightbox.classList.add('open');
+  });
+});
+
+function closeLightbox() { lightbox.classList.remove('open'); }
+lightbox.addEventListener('click', closeLightbox);
+document.getElementById('lightbox-close').addEventListener('click', (e) => { e.stopPropagation(); closeLightbox(); });
+window.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape' && lightbox.classList.contains('open')) closeLightbox();
+});
+</script>
+
+</body>
+</html>

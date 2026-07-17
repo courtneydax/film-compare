@@ -18,15 +18,21 @@ Open `index.html` directly in a browser — no server, no build step, no externa
 - **Click any non-reference slot** to open a picker modal and manually assign a specific image to that slot. A pinned slot shows a 📌 badge; click the badge to release it. **Pinned slots are skipped by Prev/Next/the slider** — stepping only cycles the remaining unpinned slots, so you can lock a couple of images in place and still step through the rest.
 - Esc closes compare mode (or the picker modal, if that's open).
 
+## Help
+
+The **Help** link in the header opens `help.html`, a standalone film stock reference page — useful even outside this app, e.g. when prompting a model elsewhere and you want stock-accurate wording. It has:
+
+- A **reference table** of common stocks: type/ISO, signature look, best-for use case, and a ready-to-copy short prompt
+- **Showcase prompts** — one full scene per stock, each chosen to expose that stock's defining trait (e.g. a neon night scene for Cinestill 800T's halation, a complementary orange/green landscape for Velvia 50's saturation) — with real example images generated from each prompt
+- A **T2I / I2I prompt template** note, and **model notes** on how different image models handle film-stock prompting, including hands-on findings where a model's output diverged from what was expected
+
+![Showcase prompts section of help.html](examples/showcase-snapshot.png)
+
 ## Files
 
 - `index.html` — the main app (HTML/CSS/JS)
-- `help.html` — film stock reference page, linked from the header. Contains, top to bottom:
-  - Reference table — per-stock type/ISO/ratio, signature look, best-for use case, suggested short T2I prompt
-  - Showcase prompts — one full scene prompt per stock, each scene deliberately chosen to expose that stock's signature trait (e.g. point-source lights at night for Cinestill's halation, complementary orange/green landscape for Velvia's saturation)
-  - T2I / I2I prompt template note (same trait descriptor, different lead-in verb)
-  - Model notes — T2I: Chroma, Grok Imagine, Seedream, Qwen Image, Krea 2 Turbo, Z-Image Turbo. I2I: FireRed, Qwen-Image-Edit, Grok, Seedream v5. Based on vendor docs/community reports, not hands-on tested in this tool.
-- `examples/` — example generated images for the showcase prompts in `help.html`, referenced directly by the showcase cards.
+- `help.html` — film stock reference page, linked from the header. See [Help](#help) above.
+- `examples/` — example generated images referenced by `help.html`'s showcase cards and model notes.
 
 ## Notes
 

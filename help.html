@@ -185,6 +185,14 @@
     color: var(--muted);
     line-height: 1.45;
   }
+  .notes-col dd .showcase-thumbs {
+    margin-top: 8px;
+  }
+  .notes-handson {
+    margin: 8px 0 0;
+    padding-left: 8px;
+    border-left: 2px solid var(--card-border);
+  }
 
   .showcase-grid {
     display: grid;
@@ -426,9 +434,9 @@
     <div class="showcase-card">
       <h3>Cinestill 800T</h3>
       <div class="showcase-thumbs">
-        <div class="showcase-thumb-wrap" data-full="examples/Chroma-Cinestill 800T.webp">
-          <img src="examples/Chroma-Cinestill 800T.webp" alt="Cinestill 800T example, generated with Chroma">
-          <span class="showcase-thumb-caption">Chroma</span>
+        <div class="showcase-thumb-wrap" data-full="examples/Seedream V5 Pro-Cinestill 800T.webp">
+          <img src="examples/Seedream V5 Pro-Cinestill 800T.webp" alt="Cinestill 800T example, generated with Seedream V5 Pro">
+          <span class="showcase-thumb-caption">Seedream V5 Pro</span>
         </div>
       </div>
       <p class="showcase-why">Point-source lights against a dark background force the halation to show up or not. Landscape scene, 3:2 aspect ratio.</p>
@@ -460,12 +468,16 @@
     <div class="showcase-card">
       <h3>Kodak Portra 400</h3>
       <div class="showcase-thumbs">
-        <div class="showcase-thumb-wrap" data-full="examples/Chroma-Kodak Portra 400.webp">
-          <img src="examples/Chroma-Kodak Portra 400.webp" alt="Kodak Portra 400 example, generated with Chroma">
-          <span class="showcase-thumb-caption">Chroma</span>
+        <div class="showcase-thumb-wrap" data-full="examples/Grok Imagine-Kodak Portra 400.png">
+          <img src="examples/Grok Imagine-Kodak Portra 400.png" alt="Kodak Portra 400 example, generated with Grok Imagine">
+          <span class="showcase-thumb-caption">Grok Imagine</span>
+        </div>
+        <div class="showcase-thumb-wrap" data-full="examples/Grok Imagine-Kodak Portra 400-darker.png">
+          <img src="examples/Grok Imagine-Kodak Portra 400-darker.png" alt="Kodak Portra 400 example with a darker skin tone, generated with Grok Imagine">
+          <span class="showcase-thumb-caption">Grok Imagine, darker skin tone</span>
         </div>
       </div>
-      <p class="showcase-why">A close portrait puts skin-tone rendering &mdash; Portra's whole reputation &mdash; front and center. Portrait orientation, 2:3 aspect ratio.</p>
+      <p class="showcase-why">A close portrait puts skin-tone rendering &mdash; Portra's whole reputation &mdash; front and center. Second example checks the same rendering holds up across a different skin tone. Portrait orientation, 2:3 aspect ratio.</p>
       <div class="prompt-cell">
         <span class="prompt-text">Close-up portrait of a woman laughing, soft natural window light, neutral background. Shot on Kodak Portra 400, 35mm film, soft muted colors, natural skin tones, fine grain, low contrast.</span>
         <button class="copy-btn">Copy</button>
@@ -475,9 +487,9 @@
     <div class="showcase-card">
       <h3>Kodak Portra 800</h3>
       <div class="showcase-thumbs">
-        <div class="showcase-thumb-wrap" data-full="examples/Chroma-Kodak Portra 800.webp">
-          <img src="examples/Chroma-Kodak Portra 800.webp" alt="Kodak Portra 800 example, generated with Chroma">
-          <span class="showcase-thumb-caption">Chroma</span>
+        <div class="showcase-thumb-wrap" data-full="examples/Grok Imagine-Kodak Portra 800.png">
+          <img src="examples/Grok Imagine-Kodak Portra 800.png" alt="Kodak Portra 800 example, generated with Grok Imagine">
+          <span class="showcase-thumb-caption">Grok Imagine</span>
         </div>
       </div>
       <p class="showcase-why">Dim indoor light tests skin tones and grain under conditions 400 speed can't handle. Landscape scene, 3:2 aspect ratio.</p>
@@ -505,9 +517,9 @@
     <div class="showcase-card">
       <h3>Fujichrome Velvia 50</h3>
       <div class="showcase-thumbs">
-        <div class="showcase-thumb-wrap" data-full="examples/Chroma-Fujichrome Velvia 50.webp">
-          <img src="examples/Chroma-Fujichrome Velvia 50.webp" alt="Fujichrome Velvia 50 example, generated with Chroma">
-          <span class="showcase-thumb-caption">Chroma</span>
+        <div class="showcase-thumb-wrap" data-full="examples/Grok Imagine-Fujichrome Velvia 50.png">
+          <img src="examples/Grok Imagine-Fujichrome Velvia 50.png" alt="Fujichrome Velvia 50 example, generated with Grok Imagine">
+          <span class="showcase-thumb-caption">Grok Imagine</span>
         </div>
       </div>
       <p class="showcase-why">Complementary orange/green landscape colors make the oversaturation impossible to miss. Landscape scene, 3:2 aspect ratio.</p>
@@ -587,21 +599,65 @@
   </div>
 
   <h2 class="section-title">Model notes</h2>
-  <p class="section-sub">Based on vendor docs / community reports, not hands-on testing in this tool yet &mdash; treat as a starting point to verify empirically.</p>
+  <p class="section-sub">Based on vendor docs / community reports, treat as a starting point to verify empirically &mdash; entries with a "Hands-on so far" note have been checked against real output in this tool.</p>
   <div class="notes-grid">
     <div class="notes-col">
       <h3>T2I</h3>
       <dl>
         <dt>Krea 2 Turbo</dt>
-        <dd>Strong at grain, motion blur, low-dynamic-range "captured" look. Has a creativity/raw dial that controls literal prompt adherence &mdash; set it to raw, or it aesthetically reinterprets your stock prompt instead of rendering it literally.</dd>
+        <dd>Strong at grain, motion blur, low-dynamic-range "captured" look. Has a creativity/raw dial that controls literal prompt adherence &mdash; set it to raw, or it aesthetically reinterprets your stock prompt instead of rendering it literally.
+          <p class="notes-handson">Hands-on so far: on the Cinestill 800T neon-night showcase prompt, it hallucinated garbled, non-real text on several of the background signs &mdash; worth a close look on any prompt with text-bearing signage in frame.</p>
+          <div class="showcase-thumbs">
+            <div class="showcase-thumb-wrap" data-full="examples/Krea 2 Turbo-Cinestill 800T.webp">
+              <img src="examples/Krea 2 Turbo-Cinestill 800T.webp" alt="Krea 2 Turbo Cinestill 800T attempt with garbled sign text">
+              <span class="showcase-thumb-caption">Garbled sign text</span>
+            </div>
+          </div>
+        </dd>
         <dt>Chroma</dt>
-        <dd>FLUX-based, trained on a broader/less-curated dataset spanning artistic, photographic, and niche styles. Likely more headroom for gritty/analog looks than heavily-curated commercial models &mdash; not directly benchmarked for film stock specifically.</dd>
+        <dd>FLUX-based, trained on a broader/less-curated dataset spanning artistic, photographic, and niche styles. Likely more headroom for gritty/analog looks than heavily-curated commercial models &mdash; not directly benchmarked for film stock specifically.
+          <p class="notes-handson">Hands-on so far: reliably rendered the "Portra 800 pushed to 1600" concert scene in black and white regardless of prompting, so that showcase example used Grok Imagine instead. Also underdelivered on four of the more diagnostic traits &mdash; barely any halation around Cinestill 800T's highlights, Velvia 50 came out closer to a naturalistic sunset than the aggressively oversaturated look the stock is known for, Portra 400 rendered with punchier contrast/detail than the muted, soft, low-contrast look that's the stock's whole reputation, and the Portra 800 dinner scene left both faces essentially in silhouette &mdash; defeating the point of a skin-tone test.</p>
+          <div class="showcase-thumbs">
+            <div class="showcase-thumb-wrap" data-full="examples/Chroma-Cinestill 800T.webp">
+              <img src="examples/Chroma-Cinestill 800T.webp" alt="Chroma Cinestill 800T attempt with little visible halation">
+              <span class="showcase-thumb-caption">Weak halation</span>
+            </div>
+            <div class="showcase-thumb-wrap" data-full="examples/Chroma-Fujichrome Velvia 50.webp">
+              <img src="examples/Chroma-Fujichrome Velvia 50.webp" alt="Chroma Fujichrome Velvia 50 attempt, undersaturated">
+              <span class="showcase-thumb-caption">Undersaturated</span>
+            </div>
+            <div class="showcase-thumb-wrap" data-full="examples/Chroma-Kodak Portra 400.webp">
+              <img src="examples/Chroma-Kodak Portra 400.webp" alt="Chroma Kodak Portra 400 attempt, too high contrast">
+              <span class="showcase-thumb-caption">Too contrasty</span>
+            </div>
+            <div class="showcase-thumb-wrap" data-full="examples/Chroma-Kodak Portra 800.webp">
+              <img src="examples/Chroma-Kodak Portra 800.webp" alt="Chroma Kodak Portra 800 attempt, faces in silhouette">
+              <span class="showcase-thumb-caption">No visible skin tones</span>
+            </div>
+          </div>
+        </dd>
         <dt>Seedream</dt>
-        <dd>Responds well to photographic language (film stock, lens, lighting). Avoid stacking style adjectives ("cinematic, photorealistic, professional") &mdash; use concrete nouns and one style cue instead to avoid muddy output.</dd>
+        <dd>Responds well to photographic language (film stock, lens, lighting). Avoid stacking style adjectives ("cinematic, photorealistic, professional") &mdash; use concrete nouns and one style cue instead to avoid muddy output.
+          <p class="notes-handson">Hands-on so far: the only model tried that clearly nailed Cinestill 800T's signature red/pink halation bloom around streetlamps, plus the cool teal shadow cast &mdash; the showcase example now uses this instead of Chroma/Grok/Krea attempts that all missed the halation.</p>
+          <div class="showcase-thumbs">
+            <div class="showcase-thumb-wrap" data-full="examples/Seedream V5 Pro-Cinestill 800T.webp">
+              <img src="examples/Seedream V5 Pro-Cinestill 800T.webp" alt="Seedream Cinestill 800T attempt with clear red halation">
+              <span class="showcase-thumb-caption">Clear halation</span>
+            </div>
+          </div>
+        </dd>
         <dt>Qwen Image</dt>
         <dd>Solid general prompt adherence. Reported as slower/more deliberate &mdash; better suited to a finishing pass than bulk iteration.</dd>
         <dt>Grok Imagine</dt>
-        <dd>Has a distinct house style historically harder to steer with fine-grained aesthetic prompts. No direct film-stock benchmark found.</dd>
+        <dd>Has a distinct house style historically harder to steer with fine-grained aesthetic prompts. No direct film-stock benchmark found.
+          <p class="notes-handson">Hands-on so far: solid all-around performer &mdash; current showcase examples for Kodak Gold 200, Portra 400, Portra 800, Portra 800 pushed to 1600, and Velvia 50 all use it. Its Cinestill 800T attempt had good mood and color grading but, like Chroma and Krea, didn't clearly render the defining halation bloom &mdash; Seedream's attempt was more accurate on that specific trait.</p>
+          <div class="showcase-thumbs">
+            <div class="showcase-thumb-wrap" data-full="examples/Grok Imagine-Cinestill 800T.png">
+              <img src="examples/Grok Imagine-Cinestill 800T.png" alt="Grok Imagine Cinestill 800T attempt, good mood but weak halation">
+              <span class="showcase-thumb-caption">Good mood, weak halation</span>
+            </div>
+          </div>
+        </dd>
         <dt>Z-Image Turbo</dt>
         <dd>Fast/distilled. Adherence is generally solid, but turbo/distilled models often trade away fine stylistic nuance for speed.</dd>
       </dl>
